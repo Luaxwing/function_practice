@@ -3,7 +3,9 @@
 // $rows = all_A(SQL:"localhost", DB:"school", TB:"students",where:"`id`<= 10");
 // $rows=find("students",['dept'=>'1','graduate_at'=>'23']);
 // dd($rows);
-$sql=insert("dept","[`id`=>'2']");
+// $sql=insert("dept","[`id`=>'2']");
+
+del("dept","2");
 
 
 
@@ -164,8 +166,9 @@ function all_A($SQL = "localhost", $DB = null, $TB = null, $where = '')
 
 
 function find($table,$id){
-    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
-    $pdo=new PDO($dsn,'root','');
+    // $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+    // $pdo=new PDO($dsn,'root','');
+    global $pdo;
 
     $sql="select * from `$table` ";
 
@@ -296,7 +299,35 @@ function insert($table,$values){
 
 
 
-function delete($table,$id){}
+function del($table,$id){
+    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+    $pdo=new PDO($dsn,'root','');
+    $sql="delete from `$table` where";
+
+    if(is_array($id)){
+        foreach($id as $col => $value){
+            $tmp[]="`$col`='$value'";
+
+        }
+     
+        
+
+        $sql .=join(" && ",$tmp);
+    }else if(is_numeric($id)){
+        $sql .= "  `id`='$id'";
+    }else{
+        echo "錯誤:參數的資料型態比須是數字或陣列";
+    }
+
+    // $sql="delete from `$table` where `id`='?'";
+    // $sql="delete from `$table` where `col1`='?' && `col2`='?'";
+
+    echo $sql;
+
+
+
+
+}
 
 
 function dd($array)
