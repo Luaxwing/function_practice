@@ -1,8 +1,10 @@
 <?php
 // $rows=all();
-$rows = all_A(SQL:"localhost", DB:"school", TB:"students",where:"`id`<= 10");
+// $rows = all_A(SQL:"localhost", DB:"school", TB:"students",where:"`id`<= 10");
+// $rows=find("students",['dept'=>'1','graduate_at'=>'23']);
+// dd($rows);
+$sql=insert("dept","[`id`=>'2']");
 
-dd($rows);
 
 
 // function all(){
@@ -116,6 +118,9 @@ function all_A($SQL = "localhost", $DB = null, $TB = null, $where = '')
         }
     } else {
         throw new Exception("錯誤: 沒有指定正確的伺服器");
+
+// 嘗試:在資料庫出錯時跳出指定訊息
+// 結果:失敗-僅有在輸入空值時跳出指定訊息，出錯時跳出下列訊息，但不是我預期的結果
     }
 }
 //     catch (PDOException $e) {
@@ -124,6 +129,7 @@ function all_A($SQL = "localhost", $DB = null, $TB = null, $where = '')
 //         echo "一般錯誤: " . $e->getMessage();
 //     }
 // }
+// $e、getMessage()是甚麼
 
 
 // function all_A($SQL=null, $DB=null, $TB=null)
@@ -153,6 +159,144 @@ function all_A($SQL = "localhost", $DB = null, $TB = null, $where = '')
 //     }
 
 // }
+
+
+
+
+function find($table,$id){
+    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+    $pdo=new PDO($dsn,'root','');
+
+    $sql="select * from `$table` ";
+
+
+
+// 條件判斷
+if(is_array($id)){
+    foreach ($id as $col => $value) {
+        $tmp[]="`$col`='$value'";
+    }
+    $sql .=" where " .join(" && " ,$tmp) ;
+}elseif(is_numeric($id)){
+    $sql .= "where `id` = '$id' ";
+}else{
+    echo"錯誤:參數的資料型態必須是數字或陣列";
+}
+
+
+
+
+
+
+
+    echo $sql;
+
+
+
+   
+    $row=$pdo -> query($sql)->fetch(PDO::FETCH_ASSOC);
+    return $row;
+}
+
+function update($table,$id,$cols){
+    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+    $pdo=new PDO($dsn,'root','');
+
+    $sql="update `$table` set ``='',``='',``='' where `id` = ''";
+
+
+
+    function update($table,$id,$cols){
+        $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+        $pdo=new PDO($dsn,'root','');
+    
+        $sql="update `$table` set ";
+    
+        if(!empty($cols)){
+            foreach($cols as $col => $value){
+                $tmp[]="`$col`='$value'";
+            }
+        }else{
+            echo "錯誤:缺少要編輯的欄位陣列";
+        }
+    
+        $sql .= join(",",$tmp);
+
+        $tmp=[];
+    
+        if(is_array($id)){
+            foreach($id as $col => $value){
+                $tmp[]="`$col`='$value'";
+            }
+            $sql .=" where ".join(" && ",$tmp);
+        }else if(is_numeric($id)){
+            $sql .= " where `id`='$id'";
+        }else{
+            echo "錯誤:參數的資料型態比須是數字或陣列";
+        }
+        echo $sql;
+        return $pdo->exec($sql);
+    }
+    
+
+}
+// array_push(); 
+// PUSH 資料
+
+function insert($table,$values){
+    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
+    $pdo=new PDO($dsn,'root','');
+
+    $sql= "insert into `$table`";
+
+    $cols="(`".join("`,`",array_keys($table))."`)";
+    // 把欄位/值獨立出來
+    $vals="('".join("`,`",array_keys($values))."')";
+
+    $sql=$sql . $cols ." values ". $vals;
+
+    $pdo->exec($sql);
+
+    return $sql;
+
+}
+
+// #1
+// INSERT into `table` 
+// ( ` ` , ` ` , ` `, ` ` )
+// values
+// ( ' ' , ' ' , ' ', ' ' )
+// => THINK---------------------------------
+
+    // 
+        // ( ` col1 ` , ` col2 ` , ... )
+        //      ⇓          ⇓
+        // ( ' val1 ' , ' val2 ' , ... )
+
+            // =>----------------------------------------
+                 //  function insert(`table`, ..?.. ){
+                         // [`col1`=>'vol1' , `col2`=>'vol2']
+                 // }
+            // ------------------------------------------
+    
+// #2
+// INSERT into `table` 
+// ( ` ` , ` ` , ` `, ` ` )
+// values
+// ( ' ' , ' ' , ' ', ' ' )
+// =>-------------------------------------------
+
+// For col, 以  "`,`" 區隔
+        // join(  "`,`" , [`col1`,`col2`] )
+
+// For val, 以  "','" 區隔
+        // join(  "','" , ['val1'',`val2`] )
+
+
+
+
+
+function delete($table,$id){}
 
 
 function dd($array)
