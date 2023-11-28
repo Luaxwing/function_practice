@@ -1,203 +1,81 @@
 <?php
-// $rows=all();
-// $rows = all_A(SQL:"localhost", DB:"school", TB:"students",where:"`id`<= 10");
-// $rows=find("students",['dept'=>'1','graduate_at'=>'23']);
-// dd($rows);
-// $sql=insert("dept","[`id`=>'2']");
+$dsn="mysql:host=localhost;charset=utf8;dbname=school";
+$pdo=new PDO($dsn,'root','');
 
-del("dept","2");
+//$rows=all('students',['dept'=>'3']);
+//$row=find('students',10);
 
+$row=find('students',['dept'=>'99','graduate_at'=>'23']);
 
+//$rows=all('students',['dept'=>'99','graduate_at'=>'23']);
+//dd($rows);
+//echo "<h3>相同條件使用find()</h3>";
 
-// function all(){
-//     $dsn="mysql:host=localhost;charset=utf8;dbname=school";
-//     $pdo=new PDO($dsn,'root','');
+dd($row);
 
-//     $sql="select * from `students`";
-//     $rows=$pdo->query($sql)->fetchAll();
-//     return $rows;
-// }
+//echo "<hr>";;
+//echo "<h3>相同條件使用all()</h3>";
+//dd($rows);
+//insert('dept',['code'=>'112','name'=>'織品系']);
+//$up=update("students",'3',['dept'=>'16','name'=>'張明珠']);
+//$up=update("students",['dept'=>2,'status_code'=>'001'],['dept'=>'99','name'=>'張明珠']);
 
-// ChatGPT寫的:PDO錯誤
-function all_A($SQL = "localhost", $DB = null, $TB = null, $where = '')
-{
-    // try {
-    if (isset($SQL) && !empty($SQL)) {
-        if (isset($DB) && !empty($DB)) {
+//del('dept',1);
 
-            $dsn = "mysql:host=$SQL;charset=utf8;dbname=$DB";
-            $pdo = new PDO($dsn, 'root', '');
+function pdo($db){
+    $dsn="mysql:host=localhost;charset=utf8;dbname=$db";
+    $pdo=new PDO($dsn,'root','');
 
-            if (isset($TB) && !empty($TB)) {
+    return $pdo;
+}
+//dd($up);
+function all($table=null,$where='',$other=''){
+    $pdo=pdo('school');
+    $sql="select * from `$table` ";
+    
+    if(isset($table) && !empty($table)){
 
-                    // $sql = "select * from `table` where `col1`= '' && `col2` = '' && ...";
-                    // ==>
-                        // #1
-                        // $sql="where".join('&&',$array);
-
-                    // ----------------------------------------------------------------------
-
-                    // ==>
-
-                         // #2
-                         // $array=["`col1`= 'value1'","`col2`= 'value2'","`col3`= 'value3'",...]
-
-                             //==> 
-
-                             //#3  
-                             // $array[]=`col1`= 'value1'";
-                             // $array[]=`col2`= 'value2'";
-                             // $array[]=`col3`= 'value3'";
-                             // $array[]=...
-
-                                //==>
-                                
-                                //#4
-                                //foreach($array as $col=>$value){
-                                // $tmp[]=" `   ` "=" '   ' ";
-                                // }
-                                
-                                // -----------------------
-
-                             //-----------------------------------
-
-                         // ----------------------------------------------------------------------
-                    
-                    // -----------------------------------------------------------------------------
-                $sel = "select * from `$TB` ";
-                if (is_array($where)) {
-
-                    if (!empty($where)) {
-                        foreach ($where as $col => $value) {
-                            $tmp[] = " `$col` = '$value' ";
-                        }
-
-                        // $sql = "select * from `$TB` where".join("&&",$tmp);
-                        $sql = "{$sel}where " . join("&&", $tmp);
-
-
-                    } else {
-                        // $sql = "select * from `$TB`";
-                        //         xxxxxx
-                        $sql = $sel;
-                    }
-
-
-
-
-
-
-
-
-                } else {
-                    // $sql = "select * from `$TB` $where";
-                    $sql ="{$sel}where ".$where;
-                    // $sql = "$sel";
+        if(is_array($where)){
+            /**
+             * ['dept'=>'2','graduate_at'=>12] =>  where `dept`='2' && `graduate_at`='12'
+             * $sql="select * from `$table` where `dept`='2' && `graduate_at`='12'"
+             */
+            if(!empty($where)){
+                foreach($where as $col => $value){
+                    $tmp[]="`$col`='$value'";
                 }
-
-                if(is_null($where)){
-                    $sql = $sel;
-                }
-                
-                echo $sql;
-
-                // $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_BOTH);
-                // $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_NUM);
-                $rows = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-                // print_r($rows);
-                echo "<br>";
-                // echo $rows;
-                return $rows;
-
-
-
-
-            } else {
-                throw new Exception("錯誤: 沒有指定正確的資料表名稱");
+                $sql .= " where ".join(" && ",$tmp);
             }
-        } else {
-            throw new Exception("錯誤: 沒有指定正確的資料庫名稱");
+        }else{
+            $sql .=" $where";
         }
-    } else {
-        throw new Exception("錯誤: 沒有指定正確的伺服器");
 
-// 嘗試:在資料庫出錯時跳出指定訊息
-// 結果:失敗-僅有在輸入空值時跳出指定訊息，出錯時跳出下列訊息，但不是我預期的結果
+            $sql .=$other;
+        //echo 'all=>'.$sql;
+        $rows=$pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+        return $rows;
+    }else{
+        echo "錯誤:沒有指定的資料表名稱";
     }
 }
-//     catch (PDOException $e) {
-//         echo "PDO錯誤: " . $e->getMessage();
-//     } catch (Exception $e) {
-//         echo "一般錯誤: " . $e->getMessage();
-//     }
-// }
-// $e、getMessage()是甚麼
-
-
-// function all_A($SQL=null, $DB=null, $TB=null)
-// {
-
-
-
-
-
-//     if (isset($SQL) && !empty($SQL)) {
-//         if (isset($DB) && !empty($DB)) {
-//             $dsn = "mysql:host=$SQL;charset=utf8;dbname=$DB";
-//             $pdo = new PDO($dsn, 'root', '');
-//             if (isset($TB) && !empty($TB)) {
-//                 $sql = "select * from `$TB`";
-//                 $rows = $pdo->query($sql)->fetchAll();
-//                 return $rows;
-//             } else {
-//                 echo "錯誤:沒有指定正確的資料表名稱";
-//             }
-//         } else {
-//             echo "錯誤:沒有指定正確的資料庫名稱";
-//         }
-
-//     } else {
-//         echo "錯誤:沒有指定正確的伺服器";
-//     }
-
-// }
-
-
 
 
 function find($table,$id){
-    // $dsn="mysql:host=localhost;charset=utf8;dbname=school";
-    // $pdo=new PDO($dsn,'root','');
     global $pdo;
-
     $sql="select * from `$table` ";
 
-
-
-// 條件判斷
-if(is_array($id)){
-    foreach ($id as $col => $value) {
-        $tmp[]="`$col`='$value'";
+    if(is_array($id)){
+        foreach($id as $col => $value){
+            $tmp[]="`$col`='$value'";
+        }
+        $sql .=" where ".join(" && ",$tmp);
+    }else if(is_numeric($id)){
+        $sql .= " where `id`='$id'";
+    }else{
+        echo "錯誤:參數的資料型態比須是數字或陣列";
     }
-    $sql .=" where " .join(" && " ,$tmp) ;
-}elseif(is_numeric($id)){
-    $sql .= "where `id` = '$id' ";
-}else{
-    echo"錯誤:參數的資料型態必須是數字或陣列";
-}
-
-
-
-
-
-
-
-    echo $sql;
-
-
-
-   
-    $row=$pdo -> query($sql)->fetch(PDO::FETCH_ASSOC);
+    //echo 'find=>'.$sql;
+    $row=$pdo->query($sql)->fetch(PDO::FETCH_ASSOC);
     return $row;
 }
 
@@ -205,136 +83,69 @@ function update($table,$id,$cols){
     $dsn="mysql:host=localhost;charset=utf8;dbname=school";
     $pdo=new PDO($dsn,'root','');
 
-    $sql="update `$table` set ``='',``='',``='' where `id` = ''";
+    $sql="update `$table` set ";
 
-
-
-    function update($table,$id,$cols){
-        $dsn="mysql:host=localhost;charset=utf8;dbname=school";
-        $pdo=new PDO($dsn,'root','');
-    
-        $sql="update `$table` set ";
-    
-        if(!empty($cols)){
-            foreach($cols as $col => $value){
-                $tmp[]="`$col`='$value'";
-            }
-        }else{
-            echo "錯誤:缺少要編輯的欄位陣列";
+    if(!empty($cols)){
+        foreach($cols as $col => $value){
+            $tmp[]="`$col`='$value'";
         }
-    
-        $sql .= join(",",$tmp);
-
-        $tmp=[];
-    
-        if(is_array($id)){
-            foreach($id as $col => $value){
-                $tmp[]="`$col`='$value'";
-            }
-            $sql .=" where ".join(" && ",$tmp);
-        }else if(is_numeric($id)){
-            $sql .= " where `id`='$id'";
-        }else{
-            echo "錯誤:參數的資料型態比須是數字或陣列";
-        }
-        echo $sql;
-        return $pdo->exec($sql);
+    }else{
+        echo "錯誤:缺少要編輯的欄位陣列";
     }
-    
 
+    $sql .= join(",",$tmp);
+    $tmp=[];
+    if(is_array($id)){
+        foreach($id as $col => $value){
+            $tmp[]="`$col`='$value'";
+        }
+        $sql .=" where ".join(" && ",$tmp);
+    }else if(is_numeric($id)){
+        $sql .= " where `id`='$id'";
+    }else{
+        echo "錯誤:參數的資料型態比須是數字或陣列";
+    }
+   // echo $sql;
+    return $pdo->exec($sql);
 }
-// array_push(); 
-// PUSH 資料
 
 function insert($table,$values){
     $dsn="mysql:host=localhost;charset=utf8;dbname=school";
     $pdo=new PDO($dsn,'root','');
 
-    $sql= "insert into `$table`";
+    $sql="insert into `$table` ";
+    $cols="(`".join("`,`",array_keys($values))."`)";
+    $vals="('".join("','",$values)."')";
+    
+    $sql=$sql . $cols ." values ".$vals;
+    
+    //echo $sql;
 
-    $cols="(`".join("`,`",array_keys($table))."`)";
-    // 把欄位/值獨立出來
-    $vals="('".join("`,`",array_keys($values))."')";
-
-    $sql=$sql . $cols ." values ". $vals;
-
-    $pdo->exec($sql);
-
-    return $sql;
-
+    return $pdo->exec($sql);
 }
 
-// #1
-// INSERT into `table` 
-// ( ` ` , ` ` , ` `, ` ` )
-// values
-// ( ' ' , ' ' , ' ', ' ' )
-// => THINK---------------------------------
-
-    // 
-        // ( ` col1 ` , ` col2 ` , ... )
-        //      ⇓          ⇓
-        // ( ' val1 ' , ' val2 ' , ... )
-
-            // =>----------------------------------------
-                 //  function insert(`table`, ..?.. ){
-                         // [`col1`=>'vol1' , `col2`=>'vol2']
-                 // }
-            // ------------------------------------------
-    
-// #2
-// INSERT into `table` 
-// ( ` ` , ` ` , ` `, ` ` )
-// values
-// ( ' ' , ' ' , ' ', ' ' )
-// =>-------------------------------------------
-
-// For col, 以  "`,`" 區隔
-        // join(  "`,`" , [`col1`,`col2`] )
-
-// For val, 以  "','" 區隔
-        // join(  "','" , ['val1'',`val2`] )
-
-
-
-
-
 function del($table,$id){
-    $dsn="mysql:host=localhost;charset=utf8;dbname=school";
-    $pdo=new PDO($dsn,'root','');
-    $sql="delete from `$table` where";
+    include "pdo.php";
+    $sql="delete from `$table` where ";
 
     if(is_array($id)){
         foreach($id as $col => $value){
             $tmp[]="`$col`='$value'";
-
         }
-     
-        
+        $sql.= join(" && ",$tmp);
 
-        $sql .=join(" && ",$tmp);
     }else if(is_numeric($id)){
-        $sql .= "  `id`='$id'";
+        $sql .= " `id`='$id'";
     }else{
         echo "錯誤:參數的資料型態比須是數字或陣列";
     }
+    //echo $sql;
 
-    // $sql="delete from `$table` where `id`='?'";
-    // $sql="delete from `$table` where `col1`='?' && `col2`='?'";
-
-    echo $sql;
-
-
-
-
+    return $pdo->exec($sql);
 }
 
-
-function dd($array)
-{
-    echo "<pre>";
-    print_r($array);
-    echo "</pre>";
-}
-
-?>
+ function dd($array){
+     echo "<pre>";
+     print_r($array);
+     echo "</pre>";
+ }
